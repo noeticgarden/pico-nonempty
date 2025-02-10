@@ -140,7 +140,15 @@ public struct Nonempty<Content: Collection> {
     }
     
     var storage: Storage
+    
+    /// The underlying nonempty collection.
+    ///
+    /// All properties in this wrapper will invoke the corresponding methods in the underlying collection.
     public var content: Content {
+        _content
+    }
+    
+    var _content: Content {
         get {
             if case .content(let content) = storage {
                 return content
@@ -153,6 +161,9 @@ public struct Nonempty<Content: Collection> {
         }
     }
     
+    /// Creates a new wrapper if the provided collection is nonempty.
+    ///
+    /// If the provided collection is empty, this constructor will return `nil`.
     @_disfavoredOverload
     public init?(_ content: Content) {
         guard !content.isEmpty else {
@@ -166,54 +177,100 @@ public struct Nonempty<Content: Collection> {
         self.storage = .content(content)
     }
     
+    /// Returns a projected view that contains convenience API to work with nonempty collections.
+    ///
+    /// This view contains both API that are equivalent to standard library collection API, but maintain the `Nonempty` type to guarantee that the final result isn't empty; and convenience API that return non-optional values where standard library properties may return optional values in the presence of an empty collection.
+    ///
+    /// For the full API, see the ``Projected`` type.
     public var nonempty: Projected {
         get { projectedValue }
         set { projectedValue = newValue }
     }
     
+    /// The wrapped value for property wrapper purposes.
+    ///
+    /// This is equivalent to the ``content`` property.
     public var wrappedValue: Content {
-        content
+        _content
     }
     
+    /// Creates a new instance from the initializer expression you provide when this type is used as a property wrapper.
+    ///
+    /// You guarantee that the `wrappedValue` you initialize the property wrapper with is nonempty. If it isn't, this behaves just like ``init(assert:)`` and will raise a fatal error.
     @_disfavoredOverload
     public init(wrappedValue: Content) {
         self = Nonempty(assert: wrappedValue)
     }
     
+    /// Creates a new instance from the initializer expression you provide when this type is used as a property wrapper.
+    ///
+    /// The resulting wrapper will wrap the content of the provided ``Nonempty`` initializer, not the wrapper itself.
     public init(wrappedValue: Nonempty<Content>) {
         self = wrappedValue
     }
     
+    /// Creates a new instance from the initializer expression you provide when this type is used as a property wrapper.
+    ///
+    /// The resulting wrapper will wrap the content of the ``Nonempty`` associated with this projection, not the wrapper itself.
     public init(projectedValue: Projected) {
         self = projectedValue.content
     }
     
     // -----
     
+    /// Provides convenience API for working with collections that are proven to be nonempty.
+    ///
+    /// Instances of this types are views for the associated ``Nonempty`` wrapper that produced them. Create one by using the ``nonempty`` property, or by using projection syntax on a `@Nonempty` property:
+    ///
+    /// ```swift
+    /// @Nonempty var values = [1, 2, 3]
+    /// $values.last // accesses Projected.last.
+    /// ```
+    ///
+    /// This view contains both API that are equivalent to standard library collection API, but maintain the `Nonempty` type to guarantee that the final result isn't empty; and convenience API that return non-optional values where standard library properties may return optional values in the presence of an empty collection.
     public struct Projected {
+        /// Returns the first element in this collection.
+        ///
+        /// Unline the equivalent standard library property, this method is guaranteed to return an property.
         public var first: Content.Element {
             content.first!
         }
         
+        /// Returns the maximum element in this collection, according to the order of elements produced by the provided comparator.
+        ///
+        /// Unline the equivalent standard library method, this method is guaranteed to return an element.
         public func max(by: (_ lhs: Content.Element, _ rhs: Content.Element) -> Bool) -> Content.Element {
             content.max(by: by)!
         }
         
+        /// Returns the minimum element in this collection, according to the order of elements produced by the provided comparator.
+        ///
+        /// Unline the equivalent standard library method, this method is guaranteed to return an element.
         public func min(by: (_ lhs: Content.Element, _ rhs: Content.Element) -> Bool) -> Content.Element {
             content.min(by: by)!
         }
         
+        /// Returns elements of the collection, separating the first element from a a subsequence of all subsequent element.
+        ///
+        /// While the receiver is nonempty, the subsequence may be empty if there is a single element in the receiver.
         public func separatingFirst() -> (first: Content.Element, suffix: Content.SubSequence) {
             return (first, content[content.index(after: content.startIndex)...])
         }
         
+        /// Returns a new sequence by applying the specified transform to each element.
+        ///
+        /// The returned sequence will be wrapped with a ``Nonempty`` wrapper, indicating that it is guaranteed to never be empty.
         public func map<X>(_ transform: (Content.Element) -> X) -> Nonempty<[X]> {
             .init(_assertUnchecked: Array(content.map(transform)))
         }
         
+        /// The ``Nonempty`` wrapper that created this view.
         public internal(set) var content: Nonempty<Content>
     }
     
+    /// The projected value for this instance when it is used as a property wrapper.
+    ///
+    /// This is equivalent to the ``nonempty`` property.
     public var projectedValue: Projected {
         get { .init(content: self) }
         set { self = newValue.content }

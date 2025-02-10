@@ -1,9 +1,16 @@
 
+/// This error is thrown by ``Nonempty/init(require:)`` if the provided collection is empty.
 public struct EmptyCollectionError: Error, Equatable {
-    let content: Any.Type
+    /// The type of empty collection that was provided.
+    public let content: Any.Type
+    
+    /// Creates a new instance of this error.
+    public init(content: Any.Type) {
+        self.content = content
+    }
     
     public static func == (_ lhs: Self, _ rhs: Self) -> Bool {
-        String(reflecting: lhs.content) == String(reflecting: rhs.content)
+        lhs.content == rhs.content
     }
 }
 
@@ -25,6 +32,9 @@ func setNonemptyFailedContentAssertionHandler(_ handler: @escaping (Any.Type) ->
 }
 
 extension Nonempty {
+    /// Creates a new wrapper, asserting that the provided collection is nonempty.
+    ///
+    /// If the provided collection is empty, this constructor will raise a fatal error.
     public init(assert value: Content) {
         if let me = Self.init(value) {
             self = me
@@ -37,6 +47,9 @@ extension Nonempty {
         }
     }
     
+    /// Creates a new wrapper, requiring that the provided collection is nonempty and throwing an error if it isn't.
+    ///
+    /// If the provided collection is empty, this constructor will throw an ``EmptyCollectionError``.
     public init(require value: Content) throws {
         guard let me = Self.init(value) else {
             throw EmptyCollectionError(content: Content.self)
@@ -45,6 +58,7 @@ extension Nonempty {
         self = me
     }
     
+    /// Creates a new wrapper from an existing one.
     public init(_ nonempty: Self) {
         self = nonempty
     }
