@@ -55,14 +55,14 @@ let last = $numbers.last // Int: 6
 Add this repository as a Swift Package Manager dependency:
 
 ```swift
-.package(url: "https://github.com/noeticgarden/pico-nonempty.git", from: "1.0")
+.package(url: "https://github.com/noeticgarden/pico-nonempty.git", from: "1.0.0"),
 ```
 
 Then, use the `Nonempty` module:
 
 ```
 dependencies: [
-    .product("Nonempty", package: "pico-nonempty"),
+    .product(name: "Nonempty", package: "pico-nonempty"),
 ]
 ```
 
