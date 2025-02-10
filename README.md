@@ -24,26 +24,30 @@ For example:
 var numbers = Nonempty(assert: [1, 2, 3, 4])
 
 // Only perform operations that maintain the nonempty property:
+
 numbers.remove(at: 0) // compiler error!
 numbers.nonempty.append(5) // works!
+
 let double = numbers.nonempty.map {
-	$0 * 2
+    $0 * 2
 } // double is a Nonempty<[Int]>!
 
 // Use the nonempty type as a collection itself:
 for number in numbers {
-	print(number)
+    print(number)
 }
-let maybeFirst = numbers.first // Optional<Int>: 1
 
-// … and avoid optionals if needed:
+// … and avoid optionals where possible:
+let maybeFirst = numbers.first // Optional<Int>: 1
 let first = numbers.nonempty.first // Int: 1
 
 // Use this as a property wrapper:
 @Nonempty var newNumbers = numbers
+print(type(of: newNumbers)) // Array<Int>
+
+// Access the modified API above via its projected value:
 $numbers.append(6)
 let last = $numbers.last // Int: 6
-print(type(of: newNumbers)) // Array<Int>
 ```
 
 ### Using this Package:
@@ -58,10 +62,10 @@ Then, use the `Nonempty` module:
 
 ```
 dependencies: [
-	.product("Nonempty", package: "pico-nonempty"),
+    .product("Nonempty", package: "pico-nonempty"),
 ]
 ```
 
 ### Issues and Support
 
-Use this repository's Issues tab to report issues. Pull requests are welcome with owner review. All support and PR acceptance is best-effort and not guaranteed.
+Use this repository's Issues tab to report issues. Pull requests are welcome with owner review. All support and PR acceptance is best-effort and not guaranteed. Please be kind.
